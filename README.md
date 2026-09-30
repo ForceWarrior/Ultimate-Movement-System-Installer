@@ -54,3 +54,7 @@ group into that place and ungroup it there, or open the plugin and use the **Ins
 ## License
 
 MIT, see [LICENSE](LICENSE). Made by Force Warrior and Captain Cookie.
+
+## Notes
+
+- AI assistance was used
