@@ -1,0 +1,28 @@
+return {
+	Name = "Animation",
+	Title = "Animations",
+	Blurb = "Rig correct ids straight out of your own config",
+	Summary = "Animation ids live in R6 and R15 branches of your block. These three pick the right branch for the rig you are on.",
+	Notes = {
+		"A slot may hold a single id or a list of them. A list is a set the kit picks from, which is how idle variations work.",
+		"Load a track once and keep it. Loading one per Enter leaks tracks and costs a frame every time.",
+		"MovementTemplate ships with no animation slot on purpose. Add R6 and R15 branches to your own block when you have clips.",
+	},
+	Rows = {
+		{ Key = "Api.AnimationId(Name)", Value = "-> number | {number} | nil",
+			Summary = "The raw id, or list of ids, for that name in your own config block, already resolved to your rig. Use this when you want the number rather than a loaded track.",
+			Code = "-- with Config.MyMove = { R15 = { SurgeAnimationId = 0 }, R6 = { SurgeAnimationId = 0 } }\nlocal Id = Api.AnimationId(\"Surge\")\nif not Id or Id == 0 then\n\tApi.Log.Warn(\"no surge animation uploaded yet\")\nend" },
+		{ Key = "Api.Animation(Name)", Value = "-> AnimationTrack?",
+			Summary = "The same lookup, loaded and ready to Play. This is the one you usually want. Load it once in Init and keep it.",
+			Code = "local Track = nil\n\nfunction MyMove:Init(NewApi)\n\tApi = NewApi\n\tTrack = Api.Animation(\"Surge\")\nend\n\nfunction MyMove:Enter()\n\tif Track then Track:Play(0.15) end\nend\n\nfunction MyMove:Exit()\n\tif Track then Track:Stop(0.2) end\nend" },
+		{ Key = "Api.NewClipPlayer(FadeTime)", Value = "-> ClipPlayer",
+			Summary = "One animation at a time with a crossfade: Set(Track) fades the last clip out and this one in, Set with the same track keeps it going, Clear(FadeOut) stops it. Set also takes an optional fade for that one change, Set(Track, nil, 0.3). For a move that swaps between a few clips as it goes.",
+			Code = "local Clips = Api.NewClipPlayer(0.15)\n\nfunction MyMove:Update(DeltaTime)\n\tClips.Set(Api.OnGround() and Api.Tracks.Run or Api.Tracks.Fall)\nend\n\nfunction MyMove:Exit()\n\tClips.Clear(0.2)\nend" },
+		{ Key = "Api.AnimationSpeed()", Value = "-> number",
+			Summary = "How much faster the clip that follows your speed plays right now, 1 when its AnimationSpeed setting is off or you are slow. For your own move that is the clip AnimationSpeedTrack hands back, use this for anything else you time to it.",
+			Code = "function MyMove:Update(DeltaTime)\n\tStepSound.PlaybackSpeed = Api.AnimationSpeed()\nend" },
+		{ Key = "Api.LoadAnimation(Id)", Value = "-> AnimationTrack?",
+			Summary = "Loads an id you already have from somewhere else. Hand it a list and one of them is chosen for you.",
+			Code = "local Track = Api.LoadAnimation(1234567890)\n\n-- a list picks one at random, which is how idle variations work\nlocal Idle = Api.LoadAnimation({ 1234567890, 9876543210 })" },
+	},
+}

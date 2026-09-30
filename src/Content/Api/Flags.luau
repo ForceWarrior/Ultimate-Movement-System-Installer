@@ -1,0 +1,28 @@
+return {
+	Name = "Flags",
+	Title = "Capability flags",
+	Blurb = "What they promise, and what the kit does about each",
+	Summary = "Four flags say what your move takes over while it runs. LocksMovement and HandsLandingToRoll change what the engine does, OwnsFacing and OwnsHead tell the extras to keep out.",
+	Notes = {
+		"OwnsFacing and OwnsHead reach the extras through Api.Tick and are asked again every tick, so a flag written as a function may change its answer while the move runs.",
+		"A flag is a promise. Declaring OwnsFacing and leaving AutoRotate on means two things steer the body, which looks like twitching.",
+	},
+	Rows = {
+		{ Key = "LocksMovement", Value = "enforced", Accepts = "boolean",
+			Summary = "While your move is active nothing else may take the body or its keys. This one really does something.",
+			Note = "Read in StateMachine.CanStartState and in the jump arbiter.",
+			Code = "-- nothing else can start, and no other move can win a key, until you Stop\nMyMove.LocksMovement = true" },
+		{ Key = "OwnsFacing", Value = "yours to keep", Accepts = "boolean",
+			Summary = "Says your move is steering the body itself. The shift lock stops turning the body, the body lean pauses and the camera follows the body's facing. Turn AutoRotate off yourself and back on when you leave.",
+			Note = "Read through Api.Tick.OwnsFacing by ShiftLock, BodyLean and CameraModule.",
+			Code = "MyMove.OwnsFacing = true\n\nfunction MyMove:Enter()\n\tApi.Humanoid.AutoRotate = false\nend\n\nfunction MyMove:Update(DeltaTime)\n\tlocal Root = Api.RootPart\n\tRoot.CFrame = CFrame.lookAt(Root.Position, Root.Position + Heading)\nend\n\nfunction MyMove:Exit()\n\tApi.Humanoid.AutoRotate = true\nend" },
+		{ Key = "OwnsHead", Value = "yours to keep", Accepts = "boolean",
+			Summary = "Says your move is driving the head. Head movement stops aiming the head at the camera while it is set.",
+			Note = "Read through Api.Tick.OwnsHead by HeadMovementModule.",
+			Code = "MyMove.OwnsHead = true\n\nfunction MyMove:Enter()\n\tApi.SetCameraOffset(Vector3.new(0, -1.5, 0))\nend\n\nfunction MyMove:Exit()\n\tApi.SetCameraOffset(nil)\nend" },
+		{ Key = "HandsLandingToRoll", Value = "enforced", Accepts = "boolean",
+			Summary = "When the body lands with a landing roll armed and the roll can start, your move is stopped and the roll takes over, which also cancels the fall damage. The dive and the crouch declare it, so a roll press on landing ends either in a roll.",
+			Note = "Read in LocomotionModule when the body lands.",
+			Code = "MyMove.HandsLandingToRoll = true" },
+	},
+}

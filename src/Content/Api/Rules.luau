@@ -1,0 +1,27 @@
+return {
+	Name = "Rules",
+	Title = "Rules worth keeping",
+	Blurb = "The mistakes the kit was refactored to stop",
+	Summary = "These are not style preferences. Each one is a defect the kit already had and had "
+		.. "removed, written down so it does not come back.",
+	Rows = {
+		{ Key = "One file is one move", Value = "no second file",
+			Summary = "Everything a move is lives in one ModuleScript. A part that genuinely stands alone becomes a CHILD of your module, not a sibling somewhere else in the tree.",
+			Code = "-- no\nCustom\n  MyMove\nEngine\n  MyMoveLogic     <- a jump across the tree every time you read it\n\n-- yes\nCustom\n  MyMove\n    MyMoveGeometry  <- a child, required by MyMove alone" },
+		{ Key = "Moves never require each other", Value = "use the Api",
+			Summary = "Shared code arrives as Api.Utils or by naming an Engine module directly. The only requires a move makes are its own children.",
+			Code = "-- no\nlocal Dash = require(script.Parent.Parent.Core.DashModule)\n\n-- yes\nif Api.ActiveMove() == \"DashModule\" then\n\treturn\nend" },
+		{ Key = "The camera only turns a body about Y", Value = "never the raw look vector",
+			Summary = "Feed a raw camera LookVector into a body direction and looking down flips it, so the body aims backwards. Flatten it first.",
+			Code = "-- no\nlocal Heading = Camera.CFrame.LookVector\n\n-- yes\nlocal Look = Camera.CFrame.LookVector\nlocal Heading = Vector3.new(Look.X, 0, Look.Z).Unit" },
+		{ Key = "A flag is a promise", Value = "keep it in the same breath",
+			Summary = "Declaring OwnsFacing without turning AutoRotate off gives you two writers on the same value, which is seen as twitching.",
+			Code = "MyMove.OwnsFacing = true\n\nfunction MyMove:Enter()\n\tApi.Humanoid.AutoRotate = false   -- the promise, kept\nend\n\nfunction MyMove:Exit()\n\tApi.Humanoid.AutoRotate = true\nend" },
+		{ Key = "Read config live", Value = "never cache at load",
+			Summary = "Caching a config value into a local at load makes the setting uneditable while the game runs, which is half of what the kit is for.",
+			Code = "-- no, frozen forever\nlocal Speed = Api.Config.Speed\n\n-- yes, follows the config\nfunction MyMove:Update(DeltaTime)\n\tMove(Api.Config.Speed)\nend" },
+		{ Key = "Engine modules are called by name", Value = "no wrappers",
+			Summary = "Call WorldQueries.Raycast with the manager passed in, never through a wrapper or alias. A wrapper that renames a function is a way to lose it.",
+			Code = "-- inside the engine\nMovementWorld.Raycast(Manager, Origin, Direction)\n\n-- from your custom move, the Api is the wrapper you get\nApi.Raycast(Origin, Direction)" },
+	},
+}
